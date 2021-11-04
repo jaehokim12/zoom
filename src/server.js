@@ -1,12 +1,29 @@
-import express from 'express';
+import http from "http";
+import WebSocket from "ws";
+import express from "express";
 
 const app = express();
 
-console.log('hello');
-app.set('view engine', 'pug');
-app.set('views', __dirname + '/views');
-app.use('/public', express.static(__dirname + '/public'));
-app.get('/', (req, res) => res.render('home'));
-
+app.set("view engine", "pug");
+app.set("views", __dirname + "/views");
+app.use("/public", express.static(__dirname + "/public"));
+app.get("/", (_, res) => res.render("home"));
+app.get("/*", (_, res) => res.redirect("/"));
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
-app.listen(3000, handleListen);
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+
+wss.on("connection", (socket)=>{
+    console.log("connected to browser")
+    socket.on("close", ()=>console.log("disconnected"))
+    
+    socket.on("message", (message) => {
+        console.log(message.toString('utf8'))
+        })
+    
+    socket.send('hello')
+    //front 로 메세지를 보냄
+});
+
+server.listen(3000, handleListen);
